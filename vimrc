@@ -49,24 +49,14 @@ function! SwapWindows()
     exe "buffer" . buf2
 endfunction
 
-nmap <C-w><C-s> :<c-u> call SwapWindows()<CR>
 
 set hidden
-
-source ~/.vim/custom/C.vim
-
-nmap <LEADER><tab> :call GetHeaderOrSource()<CR>
-nmap <F1> :<c-u> call NextOfKind(1)<CR>
-nmap <F2> :<c-u> call NextOfKind(-1)<CR>
-nmap <F5> :call TryRun()<CR>
+nmap <C-w><C-s> :<c-u> call SwapWindows()<CR>
 
 imap <C-a> <C-o>^
 imap <C-e> <C-o>$
 
 let mapleader="\\"
-nmap <LEADER>r :call TryRun()<CR>
-nmap <LEADER>c :call SaveIfDirty()<CR>:AsyncRun make<CR>
-nmap <LEADER>s :AsyncStop<CR>
 
 let g:asyncrun_open=1
 

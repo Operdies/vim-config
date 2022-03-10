@@ -161,3 +161,12 @@ function! TryRun()
         echom "No commands registered to execute ." . ext " files."
     endif
 endfunction
+
+nmap <LEADER><tab> :call GetHeaderOrSource()<CR>
+nmap <F1> :<c-u> call NextOfKind(1)<CR>
+nmap <F2> :<c-u> call NextOfKind(-1)<CR>
+
+nmap <LEADER>r :call TryRun()<CR>
+nmap <LEADER>c :call SaveIfDirty()<CR>:AsyncRun make<CR>
+nmap <LEADER>s :AsyncStop<CR>
+
