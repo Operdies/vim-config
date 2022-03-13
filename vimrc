@@ -5,7 +5,10 @@ call plug#begin()
 Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 Plug 'morhetz/gruvbox'
 Plug 'tpope/vim-sensible'
+Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-surround'
 Plug 'skywind3000/asyncrun.vim'
+Plug 'rhysd/vim-clang-format'
 
 call plug#end()
 
@@ -66,4 +69,6 @@ nmap [<SPACE> mlO<ESC>`l
 nmap ]<SPACE> mlo<ESC>`l 
 
 " Preserve cursor position when joining
-nmap J ml:join<CR>`l
+nmap J mlgJ`l
+nmap <C-j> mla<CR><ESC>`l
+

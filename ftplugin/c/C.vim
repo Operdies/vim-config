@@ -1,6 +1,7 @@
-function LoadPlugin() 
-    let g:cVimAlreadyLoaded=1
-    function IsDirty() 
+if (!exists('g:CVimFunctionsLoaded'))
+    let g:CVimFunctionsLoaded=1
+
+    function! IsDirty() 
         return getbufinfo(bufnr(@%))[0].changed
     endfunction
 
@@ -10,11 +11,11 @@ function LoadPlugin()
         endif
     endfunction
 
-    function GetBaseName(filename)
+    function! GetBaseName(filename)
         return fnamemodify(a:filename, ":t:r")
     endfunction
 
-    function CompareLastUsed(v1, v2)
+    function! CompareLastUsed(v1, v2)
         return a:v1.lastused - a:v2.lastused
     endfunction
 
@@ -32,7 +33,7 @@ function LoadPlugin()
     endfunction
 
     "Switch n buffers forward if that buffer matches the given expression
-    function NextMatching(expr, n)
+    function! NextMatching(expr, n)
         if (IsDirty())
             execute "w"
         endif
@@ -131,19 +132,26 @@ function LoadPlugin()
             echom "No commands registered to execute ." . ext " files."
         endif
     endfunction
-
-    nmap <LEADER><tab> :call GetHeaderOrSource()<CR>
-    nmap <F1> :<c-u> call NextOfKind(1)<CR>
-    nmap <F2> :<c-u> call NextOfKind(-1)<CR>
-
-    nmap <LEADER>r :call TryRun()<CR>
-    nmap <LEADER>c :call SaveIfDirty()<CR>:AsyncRun make<CR>
-    nmap <LEADER>s :AsyncStop<CR>
-
-    set foldmethod=syntax
-
-endfunction
-
-if (!exists('g:cVimAlreadyLoaded')) 
-    call LoadPlugin()
 endif
+
+nmap <buffer><LEADER><tab> :call GetHeaderOrSource()<CR>
+nmap <buffer><F1> :<c-u> call NextOfKind(1)<CR>
+nmap <buffer><F2> :<c-u> call NextOfKind(-1)<CR>
+nmap <buffer><LEADER>r :call TryRun()<CR>
+nmap <buffer><LEADER>c :call SaveIfDirty()<CR>:AsyncRun make<CR>
+nmap <buffer><LEADER>s :AsyncStop<CR>
+nmap <buffer><LEADER>t :tag 
+
+" Clang format
+let g:clang_format#style_options = {
+            \ "AccessModifierOffset" : -4,
+            \ "AllowShortIfStatementsOnASingleLine" : "true",
+            \ "AlwaysBreakTemplateDeclarations" : "true",
+            \ "Standard" : "C++11"}
+
+" map to <Leader>cf in C++ code
+nnoremap <buffer><Leader>gf :<C-u>ClangFormat<CR>
+vnoremap <buffer><Leader>gf :ClangFormat<CR>
+
+setlocal foldmethod=syntax
+setlocal foldlevel=99
