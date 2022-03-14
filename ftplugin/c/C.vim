@@ -1,4 +1,4 @@
-if (!exists('g:CVimFunctionsLoaded'))
+if (!exists('g:CVimFunctionsLoaded') || g:CVimFunctionsLoaded == 0 || 1)
     let g:CVimFunctionsLoaded=1
 
     function! IsDirty() 
@@ -20,13 +20,6 @@ if (!exists('g:CVimFunctionsLoaded'))
     endfunction
 
     let g:CompileBufNo = 0
-    function! CreateCompileBuffer()
-        enew
-        set buftype=nofile
-        execute "silent file CompileOutputBuffer" . g:CompileBufNo
-        resize 16
-        let g:CompileBufNo = g:CompileBufNo + 1
-    endfunction
 
     function! TriggerVisualBell()
         execute "normal! \<C-\>\<C-n>\<Esc>"
@@ -42,6 +35,9 @@ if (!exists('g:CVimFunctionsLoaded'))
 
         let buffers = getbufinfo()
         let buffers = filter(buffers, a:expr)
+        if (len(buffers) <= 0) 
+            return -1
+        endif
 
         let idx = index(buffers, cur)
         let target = idx + a:n
@@ -70,14 +66,18 @@ if (!exists('g:CVimFunctionsLoaded'))
         let ext=expand('%:e')
 
         if (ext != 'h' && ext != 'c')
-            echo "Not a C file."
+            echo "Not a C fime."
             return
         endif
         let filenameNoExt=expand('%:t:r')
 
-        let tagged = taglist(filenameNoExt)
+        let tagged = taglist(".*")
         for fn in tagged
-            let fnExt = fnamemodify(fn.name, ':e')
+            let basename = fnamemodify(fn.filename, ':t:r')
+            if (basename != filenameNoExt)
+                continue
+            endif
+            let fnExt = fnamemodify(fn.filename, ':e')
             if (fnExt == ext)
                 continue
             endif
@@ -155,3 +155,82 @@ vnoremap <buffer><Leader>gf :ClangFormat<CR>
 
 setlocal foldmethod=syntax
 setlocal foldlevel=99
+
+nmap <buffer><LEADER>gdb :vert term<CR><C-w>L:file gdb
+
+
+" Debugging with gdb
+function! GetDebugger()
+    let buffers = getbufinfo()
+    let buffers = filter(buffers, "stridx(v:val.name, 'gdb') > -1")
+    let min = 999
+    for buf in buffers
+        if (buf.bufnr < min)
+            let min = buf.bufnr
+        endif
+    endfor
+    return min == 999 ? -1 : min
+endfunction
+
+function! StartGdb()
+    let gdb = GetDebugger()
+    " Check if the buffer exists
+    if (gdb == -1)
+        execute "vertical term gdb"
+        execute "wincmd L"
+        execute "wincmd p"
+    endif
+endfunction
+
+function! SendToDebugger(str)
+let gdb = GetDebugger()
+    if (gdb == -1)
+        echo "No active debugging session."
+        return
+    endif
+    let win = bufwinnr(gdb)
+    if (win == -1)
+        echo "Debugging window not active."
+        return
+    endif
+    call term_sendkeys(gdb, a:str . "\n")
+endfunction
+
+function! AddBreakpoint()
+    let filename = expand('%:t')
+    let thisLine = line('.')
+    let cmd = "break " . filename . ":" . thisLine
+    call SendToDebugger(cmd)
+    call SendToDebugger("info break")
+endfunction
+
+function! Step()
+    let cnt = v:count
+    if (cnt < 1)
+        let cnt = 1
+    endif
+    call SendToDebugger("step " . cnt)
+    call SendToDebugger("list")
+endfunction
+
+function! RemoveBreakpoint()
+    let cnt = v:count
+    if (count < 1)
+        echo "Invalid breakpoint"
+        return
+    endif
+    call SendToDebugger("del " . cnt)
+    call SendToDebugger("info break")
+endfunction
+
+nmap <buffer><space>gdb :call StartGdb()<CR>
+nmap <buffer><space>b :call AddBreakpoint()<CR>
+nmap <buffer><space>q :call SendToDebugger("info break")<CR>
+nmap <buffer><space>y :call SendToDebugger("y")<CR>
+nmap <buffer><space>n :call SendToDebugger("n")<CR>
+nmap <buffer><space>c :call SendToDebugger("c")<CR>
+nmap <buffer><space>r :call SendToDebugger("r")<CR>
+nmap <buffer><space>l :call SendToDebugger("list")<CR>
+nmap <buffer><space>t :call SendToDebugger("bt")<CR>
+nmap <buffer><space>s :<c-u>call Step()<CR>
+nmap <buffer><space>d :<c-u>call RemoveBreakpoint()<CR>
