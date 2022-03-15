@@ -1,4 +1,4 @@
-if (!exists('g:CVimFunctionsLoaded') || g:CVimFunctionsLoaded == 0 || 1)
+if (!exists('g:CVimFunctionsLoaded') || g:CVimFunctionsLoaded == 0)
     let g:CVimFunctionsLoaded=1
 
     function! IsDirty() 
@@ -234,3 +234,4 @@ nmap <buffer><space>l :call SendToDebugger("list")<CR>
 nmap <buffer><space>t :call SendToDebugger("bt")<CR>
 nmap <buffer><space>s :<c-u>call Step()<CR>
 nmap <buffer><space>d :<c-u>call RemoveBreakpoint()<CR>
+nmap <buffer><space>p :call SendToDebugger("print " . expand("<cword>"))<CR>
